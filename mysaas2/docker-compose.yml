@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    env_file:
+      - .env
+    #environment:
+      #POSTGRES_DB: db_saas2
+      #POSTGRES_USER: usr_saas2
+      #POSTGRES_PASSWORD: q
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mysaas2_network
+
+  wagtail:
+    build:
+      context: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    #environment:
+      #DATABASE_URL: postgres://usr_saas2:q@postgres:5432/db_saas2
+      #SECRET_KEY: your_secret_key_here
+      #DEBUG: "False"  # Set to "True" during development if needed
+    command: ["sh", "-c", "set -xe && python manage.py migrate --noinput && gunicorn mysaas2.wsgi:application"]
+    working_dir: /app  # Set the working directory to /app
+    user: wagtail  # Set the user to run the commands as
+    networks:
+      - mysaas2_network
+  
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - wagtail
+    networks:
+      - mysaas2_network
+
+networks:
+  mysaas2_network:
+    driver: bridge
+
+volumes:
+  postgres_data:

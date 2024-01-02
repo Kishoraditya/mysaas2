@@ -1,0 +1,17 @@
+# Dockerfile.nginx
+
+# Use an official Nginx base image
+FROM nginx:latest
+
+# Copy Nginx configuration file
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Copy static and media files from Django
+#COPY --from=wagtail /app/static /app/static
+#COPY --from=wagtail /app/media /app/media
+
+# Expose port 80
+EXPOSE 80
+
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]
